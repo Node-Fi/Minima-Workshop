@@ -1,7 +1,13 @@
 import { getTokenContractFromAddress } from "@dahlia-labs/use-ethers";
 import { Button, Card, Group, Loader, NumberInput, Text } from "@mantine/core";
+import {
+  hideNotification,
+  showNotification,
+  updateNotification,
+} from "@mantine/notifications";
 import { useCallback, useState } from "react";
 import { useSigner } from "wagmi";
+import { use0xTrade } from "../hooks/use0xTrade";
 import { useTrade } from "../hooks/useTrade";
 import TokenSelector from "./TokenSelector";
 
@@ -9,26 +15,30 @@ function SwapCard() {
   const [inputToken, setInputToken] = useState<string>();
   const [outputToken, setOutputToken] = useState<string>();
   const [inputAmount, setInputAmount] = useState<number>();
-  const trade = useTrade(inputToken, outputToken, inputAmount?.toString());
+  const [hash, setHash] = useState<string>();
+  const trade = use0xTrade(inputToken, outputToken, inputAmount?.toString());
   const { data: signer } = useSigner();
-
   const onSubmit = useCallback(async () => {
-    console.log(signer, trade.data?.txn);
     if (!inputToken || !outputToken || !inputAmount || !trade.data || !signer)
       return undefined;
     const { txn, inputAmount: decimalAdjustedInput } = trade.data;
 
     if (!txn || "error" in txn) return undefined;
 
-    console.log("Approving");
     const erc20Contract = getTokenContractFromAddress(inputToken, signer);
     const approval = await erc20Contract.approve(
-      txn.to,
+      trade.data.approvalAddress,
       decimalAdjustedInput.raw.toString()
     );
     await approval.wait();
 
-    const swap = await signer.sendTransaction(txn);
+    const swap = await signer.sendTransaction({
+      from: txn.from,
+      to: txn.to,
+      data: txn.data,
+      gasLimit: "3000000",
+    });
+
     await swap.wait();
   }, [inputToken, signer, trade, outputToken, inputAmount]);
 
@@ -62,6 +72,9 @@ function SwapCard() {
         <Button fullWidth mt="lg" onClick={onSubmit}>
           Swap!
         </Button>
+      ) : null}
+      {hash ? (
+        <Text mt="lg" color="green">{`Recent trade: ${hash}`}</Text>
       ) : null}
     </Card>
   );

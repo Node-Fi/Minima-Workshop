@@ -4,50 +4,31 @@ import axios from "axios";
 import { useDebouncedValue } from "@mantine/hooks";
 import { useAccount, useNetwork, useQuery, useSigner } from "wagmi";
 
-export type MinimaOptions = {
-  deadlineMs: number;
-  slippage: number;
-  slippagePercentage: number;
-  maxHops: number;
-  includeTxn: boolean;
-  priceImpact: boolean;
-  to: string;
-  from: string;
+export type ZeroExOptions = {
+  skipValidation: boolean;
 };
 
 export type RouterPayloadRequest = {
-  tokenIn: string;
-  tokenOut: string;
-  amountIn: string;
-  chainId?: number;
-} & Partial<MinimaOptions>;
-
-type NodeRoute = {
-  path: string[];
-  pairs: string[];
-  extras: (string | number[])[];
-  inputAmount: string | number;
-  expectedOutputAmount: string | number;
-  deadline: string | number;
-  partner: string | number;
-  sig: string | number[];
-};
+  sellToken: string;
+  buyToken: string;
+  sellAmount: string;
+  takerAddress: string;
+} & Partial<ZeroExOptions>;
 
 export type RouterResponse = {
-  expectedOut: string;
-  routerAddress: string;
-  details: NodeRoute;
-  txn: { to: string; from: string; data: string } | { error: string };
-  minimumExpectedOut: string;
-  priceImpact: {
-    numerator: number;
-    denominator: number;
-  };
+  buyAmount: string;
+  allowanceTarget: string;
+  to: string;
+  value: string;
+  gas: string;
+  data: string;
+  gasPrice: string;
+  estimateGas: string;
 };
 
-const minimaQuery = async (params: RouterPayloadRequest) => {
+const ZeroExQuery = async (params: RouterPayloadRequest) => {
   const resp = await axios.get<RouterResponse>(
-    "https://staging.router.nodefinance.org/routes",
+    "https://avalanche.api.0x.org/swap/v1/quote",
     {
       params,
     }
@@ -56,7 +37,7 @@ const minimaQuery = async (params: RouterPayloadRequest) => {
   return resp.data;
 };
 
-export const useTrade = (
+export const use0xTrade = (
   inputTokenAddress?: string,
   outputTokenAddress?: string,
   inputAmountTypedValue?: string
@@ -89,24 +70,28 @@ export const useTrade = (
 
       const inputAmount = TokenAmount.parse(input, debouncedInput);
 
-      const result = await minimaQuery({
-        tokenIn: inputTokenAddress,
-        tokenOut: outputTokenAddress,
-        amountIn: inputAmount.raw.toString(),
-        from: account.address,
-        includeTxn: true,
-        slippage: 100,
-        chainId: chain?.id,
-        maxHops: 1,
-        to: account.address,
+      const result = await ZeroExQuery({
+        sellToken: inputTokenAddress,
+        buyToken: outputTokenAddress,
+        sellAmount: inputAmount.raw.toString(),
+        takerAddress: account.address,
+        skipValidation: true,
       });
 
       console.log(result);
 
       return {
-        expectedOutput: new TokenAmount(output, result.expectedOut),
+        expectedOutput: new TokenAmount(output, result.buyAmount),
         inputAmount,
-        txn: result.txn,
+        approvalAddress: result.allowanceTarget,
+        txn: {
+          to: result.to,
+          data: result.data,
+          gas: result.gas,
+          gasPrice: result.gasPrice,
+          estimateGas: result.estimateGas,
+          from: account.address,
+        },
       };
     }
   );

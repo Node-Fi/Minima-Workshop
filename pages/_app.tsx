@@ -10,6 +10,7 @@ import { configureChains, createClient, WagmiConfig } from "wagmi";
 import { avalancheChain, fujiChain } from "../config/wagmiAvax";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 import { AppShell, Header, MantineProvider } from "@mantine/core";
+import { NotificationsProvider } from "@mantine/notifications";
 
 const { provider, chains } = configureChains(
   [avalancheChain, fujiChain],
@@ -31,32 +32,34 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains}>
-        <MantineProvider
-          withGlobalStyles
-          withNormalizeCSS
-          theme={{
-            /** Put your mantine theme override here */
-            colorScheme: "light",
-          }}
-        >
-          <AppShell
-            header={
-              <Header height={70} p="md">
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    height: "100%",
-                  }}
-                >
-                  <ConnectButton />
-                </div>
-              </Header>
-            }
+        <NotificationsProvider>
+          <MantineProvider
+            withGlobalStyles
+            withNormalizeCSS
+            theme={{
+              /** Put your mantine theme override here */
+              colorScheme: "light",
+            }}
           >
-            <Component {...pageProps} />
-          </AppShell>
-        </MantineProvider>
+            <AppShell
+              header={
+                <Header height={70} p="md">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      height: "100%",
+                    }}
+                  >
+                    <ConnectButton />
+                  </div>
+                </Header>
+              }
+            >
+              <Component {...pageProps} />
+            </AppShell>
+          </MantineProvider>
+        </NotificationsProvider>
       </RainbowKitProvider>
     </WagmiConfig>
   );
