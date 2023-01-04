@@ -18,6 +18,8 @@ export const avalancheChain: Chain = {
   testnet: false,
 };
 
+
+
 export const fujiChain: Chain = {
   id: 43_113,
   name: "Fuji",
@@ -32,6 +34,24 @@ export const fujiChain: Chain = {
   },
   blockExplorers: {
     default: { name: "SnowTrace", url: "https://testnet.snowtrace.io/" },
+  },
+  testnet: true,
+};
+
+export const celoChain: Chain = {
+  id: 42220,
+  name: "Celo",
+  network: "celo",
+  nativeCurrency: {
+    decimals: 18,
+    name: "Celo native asset",
+    symbol: "CELO",
+  },
+  rpcUrls: {
+    default: "https://forno.celo.org",
+  },
+  blockExplorers: {
+    default: { name: "blockscout", url: "https://explorer.celo.org/" },
   },
   testnet: true,
 };

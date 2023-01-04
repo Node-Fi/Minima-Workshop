@@ -47,7 +47,7 @@ export type RouterResponse = {
 
 const minimaQuery = async (params: RouterPayloadRequest) => {
   const resp = await axios.get<RouterResponse>(
-    "https://staging.router.nodefinance.org/routes",
+    "http://34.96.97.28:8080/routes",
     {
       params,
     }

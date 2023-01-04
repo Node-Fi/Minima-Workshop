@@ -16,7 +16,7 @@ function SwapCard() {
   const [outputToken, setOutputToken] = useState<string>();
   const [inputAmount, setInputAmount] = useState<number>();
   const [hash, setHash] = useState<string>();
-  const trade = use0xTrade(inputToken, outputToken, inputAmount?.toString());
+  const trade = useTrade(inputToken, outputToken, inputAmount?.toString());
   const { data: signer } = useSigner();
   const onSubmit = useCallback(async () => {
     if (!inputToken || !outputToken || !inputAmount || !trade.data || !signer)
@@ -26,8 +26,9 @@ function SwapCard() {
     if (!txn || "error" in txn) return undefined;
 
     const erc20Contract = getTokenContractFromAddress(inputToken, signer);
+    
     const approval = await erc20Contract.approve(
-      trade.data.approvalAddress,
+      txn.to,
       decimalAdjustedInput.raw.toString()
     );
     await approval.wait();

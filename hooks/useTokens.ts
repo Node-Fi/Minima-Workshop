@@ -14,7 +14,7 @@ export interface SerializedToken {
 
 export const useTokenList = () => {
   const { chain } = useNetwork();
-
+  
   const fetchTokens = async () => {
     const resp = await fetch(
       `https://raw.githubusercontent.com/Node-Fi/node-finance-token-list/main/build/${chain.id}-tokens.json`
@@ -23,7 +23,7 @@ export const useTokenList = () => {
     const tokens = (await resp.json()) as SerializedToken[];
 
     const supportedTokens = await axios.get<{ tokens: string[] }>(
-      "https://staging.router.nodefinance.org/tokens",
+      "http://34.96.97.28:8080/tokens",
       {
         params: {
           chainId: chain?.id,

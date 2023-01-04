@@ -7,13 +7,13 @@ import {
   ConnectButton,
 } from "@rainbow-me/rainbowkit";
 import { configureChains, createClient, WagmiConfig } from "wagmi";
-import { avalancheChain, fujiChain } from "../config/wagmiAvax";
+import { avalancheChain, celoChain, fujiChain } from "../config/wagmiAvax";
 import { jsonRpcProvider } from "wagmi/providers/jsonRpc";
 import { AppShell, Header, MantineProvider } from "@mantine/core";
 import { NotificationsProvider } from "@mantine/notifications";
 
 const { provider, chains } = configureChains(
-  [avalancheChain, fujiChain],
+  [avalancheChain, fujiChain, celoChain],
   [jsonRpcProvider({ rpc: (chain) => ({ http: chain.rpcUrls.default }) })]
 );
 
